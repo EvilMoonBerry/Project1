@@ -47,14 +47,20 @@ void printReverse(struct Node* curr) {
     }
 }
 // writing in file in reverse
-void writeinfile(struct Node * curr, char * filename) {
+void writeinfile(struct Node * curr, char * outputfile) {
 
-    FILE *fptr = fopen(filename, "a");
+    FILE *fptr;
+    fptr = fopen(outputfile, "a");
+            if (fptr == NULL) {
+                fprintf(stderr, "error: cannot open file %s\n", outputfile);
+                free(outputfile);
+                exit(1);
+            }
     
     if (curr == NULL)
         return;
 
-    writeinfile(curr->next, filename);
+    writeinfile(curr->next, outputfile);
 
     size_t len = strlen(curr->value);
     if (len == 0 || curr->value[len - 1] != '\n') {
