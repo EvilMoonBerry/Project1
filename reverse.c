@@ -47,16 +47,21 @@ void printReverse(struct Node* curr) {
     }
 }
 // writing in file in reverse
-void writeinfile(struct Node* curr) {
+void writeinfile(struct Node * curr, char * filename) {
 
-    FILE *fptr = fopen("testfile.txt", "a");
+    FILE *fptr = fopen(filename, "a");
     
     if (curr == NULL)
         return;
 
-    writeinfile(curr->next);
+    writeinfile(curr->next, filename);
 
-    fprintf(fptr,"%s", curr->value);
+    size_t len = strlen(curr->value);
+    if (len == 0 || curr->value[len - 1] != '\n') {
+        fprintf(fptr,"%s\n", curr->value);
+    } else {
+        fprintf(fptr,"%s", curr->value);
+    }
 
     fclose(fptr);
 }
@@ -130,7 +135,7 @@ int main (int argc, char *argv[]) {
     }
     // If input and output file was given then write inputfile text to outputfile in reverse order
     if(argc == 3){
-        writeinfile(start);
+        writeinfile(start, argv[2]);
     }
 
     return 0;
