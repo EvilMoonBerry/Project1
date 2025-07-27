@@ -4,21 +4,23 @@
 #include <stdlib.h>
 #include <string.h>
 
+//https://www.geeksforgeeks.org/c/linked-list-in-c/ How linked list works
 typedef struct Node {
     char *value;
     struct Node *next;
 } Node;
 
 Node *create_node(const char *line_content){
-    Node *new_node = malloc(sizeof(Node));
+    Node *new_node = malloc(sizeof(Node)); //
     if (!new_node) {
         perror("Failed to allocate node");
         exit(1);
     }
 
+//https://www.geeksforgeeks.org/c/dynamic-memory-allocation-in-c-using-malloc-calloc-free-and-realloc/ How to allocate memory dynamicly
     size_t length = strlen(line_content) + 1;
     new_node->value = malloc(length);
-    if (!new_node->value) {
+    if (new_node->value==NULL) {
         fprintf(stderr,"error: malloc failed ");
         free(new_node);
         exit(1);
@@ -29,13 +31,13 @@ Node *create_node(const char *line_content){
     return new_node;
 }
 
-// print linked list in reverse 
+// https://www.geeksforgeeks.org/dsa/print-reverse-of-a-linked-list-without-actually-reversing/ print linked list in reverse (Used in both printReverse() and Writeinfile())
 void printReverse(struct Node* curr) {
 
     if (curr == NULL)
         return;
 
-    // print the list after start node
+    //print the list after start node
     printReverse(curr->next);
 
     //Check if the string ends with \n; if not add one for the last lines for cleaner printing
@@ -46,28 +48,39 @@ void printReverse(struct Node* curr) {
         printf("%s", curr->value);
     }
 }
-// writing in file in reverse
-void writeinfile(struct Node * curr, char * outputfile) {
 
-    FILE *fptr;
-    fptr = fopen(outputfile, "a");
-            if (fptr == NULL) {
-                fprintf(stderr, "error: cannot open file %s\n", outputfile);
-                free(outputfile);
-                exit(1);
-            }
-    
+void writeinfile(struct Node*curr, FILE *fptr){
     if (curr == NULL)
         return;
 
-    writeinfile(curr->next, outputfile);
-
+    writeinfile(curr->next, fptr);
+    
+    //Go through the linked list and write lines to the file.
     size_t len = strlen(curr->value);
+    //The two final lines are added together so to prevent that \n is added
     if (len == 0 || curr->value[len - 1] != '\n') {
         fprintf(fptr,"%s\n", curr->value);
     } else {
         fprintf(fptr,"%s", curr->value);
     }
+}
+
+// writing in file in reverse
+void writeinfilestart(struct Node * curr, char * outputfile) {
+
+    //Try to  open the outputfile for writing
+    // https://stackoverflow.com/questions/16427664/trying-not-to-overwrite-a-file-in-c To prevent creation of a new file
+    FILE *fptr;
+    fptr = fopen(outputfile, "r+");
+        if (fptr == NULL) {
+            fprintf(stderr, "error: cannot open file %s\n", outputfile);
+            exit(1);
+        }
+
+    if (curr == NULL)
+        return;
+
+    writeinfile(curr, fptr);
 
     fclose(fptr);
 }
@@ -84,13 +97,19 @@ int main (int argc, char *argv[]) {
     Node *start = NULL;
     Node *end = NULL;
 
+    if(argc >3){
+        fprintf(stderr,"usage: reverse <input> <output>\n");
+        exit(1);
+    }
+
     //Error if input and output files are the same
     if (argc > 2 && strcmp(argv[1], argv[2]) == 0){
-        fprintf(stderr,"error: Input and output file must differ\n", argv[1]);
+        fprintf(stderr,"error: Input and output file must differ\n");
         exit(1);
     }
 
     //Opening file from separate user input or from commandline
+    //https://www.w3schools.com/c/c_files_read.php  How to read files
     if (argc == 1) {
         ssize_t chars_read = getline(&inputfile, &input_len, stdin);
             if (chars_read == -1) {
@@ -105,21 +124,21 @@ int main (int argc, char *argv[]) {
             fptr = fopen(inputfile, "r");
             if (fptr == NULL) {
                 fprintf(stderr, "error: cannot open file %s\n", inputfile);
-                free(inputfile);
                 exit(1);
             }
 
             // free inputfile
             free(inputfile);
+        //Open file from command line, if the file cannot be open give error message
         } else {
             fptr = fopen(argv[1], "r");
             if (fptr == NULL) {
                 fprintf(stderr, "error: cannot open file %s\n", argv[1]);
-                free(fptr);
                 exit(1);
             }
     }
 
+    //https://www.geeksforgeeks.org/c/linked-list-in-c/ How linked list works
     //Loop through file lines and store it to linked list
     while ((line = getline(&part, &len, fptr)) != -1){
         Node *new_node =  create_node (part);
@@ -135,14 +154,15 @@ int main (int argc, char *argv[]) {
 
     free(part);
 
-    // If only input file was given then print the inputfile for user in reverse order
+    // If only inputfile was given then print the inputfile for user in reverse order
     if (argc == 1 || argc == 2 ){
         printReverse(start);
     }
-    // If input and output file was given then write inputfile text to outputfile in reverse order
+    // If input and outputfile was given then write inputfile text to outputfile in reverse order
     if(argc == 3){
-        writeinfile(start, argv[2]);
+        writeinfilestart(start, argv[2]);
     }
+    
 
     return 0;
 
