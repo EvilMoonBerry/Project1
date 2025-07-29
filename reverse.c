@@ -79,7 +79,7 @@ void writeinfilestart(struct Node * curr, char * outputfile) {
 
     if (curr == NULL)
         return;
-
+    //
     writeinfile(curr, fptr);
 
     fclose(fptr);
@@ -97,6 +97,7 @@ int main (int argc, char *argv[]) {
     Node *start = NULL;
     Node *end = NULL;
 
+    //Error if more than 2 files are given
     if(argc >3){
         fprintf(stderr,"usage: reverse <input> <output>\n");
         exit(1);
@@ -127,7 +128,6 @@ int main (int argc, char *argv[]) {
                 exit(1);
             }
 
-            // free inputfile
             free(inputfile);
         //Open file from command line, if the file cannot be open give error message
         } else {
